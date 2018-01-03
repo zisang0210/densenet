@@ -25,13 +25,13 @@
 set -e
 
 # Where the pre-trained InceptionV3 checkpoint is saved to.
-PRETRAINED_CHECKPOINT_DIR=/tmp/checkpoints
+PRETRAINED_CHECKPOINT_DIR=~/tmp/checkpoints
 
 # Where the training (fine-tuned) checkpoint and logs will be saved to.
-TRAIN_DIR=/tmp/flowers-models/inception_v4
+TRAIN_DIR=~/tmp/flowers-models/inception_v4
 
 # Where the dataset is saved to.
-DATASET_DIR=/tmp/flowers
+DATASET_DIR=~/tmp/flowers
 
 # Download the pre-trained checkpoint.
 if [ ! -d "$PRETRAINED_CHECKPOINT_DIR" ]; then
