@@ -29,11 +29,16 @@ def block(net, layers, growth, scope='block'):
         net = tf.concat(axis=3, values=[net, tmp])
     return net
 
+def transit(net,compression_rate,scope='transit'):
+    net=slim.conv2d(net, int(net.shape.as_list()[3]*compression_rate), [1,1], scope=scope + '_conv')
+    net=slim.avg_pool2d(net, [2, 2], stride=2, padding='VALID')
+    return net
+
 
 def densenet(images, num_classes=1001, is_training=False,
              dropout_keep_prob=0.8,
              scope='densenet'):
-    """Creates a variant of the densenet model.
+    """Creates Densenet-121 model.
 
       images: A batch of `Tensors` of size [batch_size, height, width, channels].
       num_classes: the number of classes in the dataset.
@@ -60,12 +65,60 @@ def densenet(images, num_classes=1001, is_training=False,
     with tf.variable_scope(scope, 'DenseNet', [images, num_classes]):
         with slim.arg_scope(bn_drp_scope(is_training=is_training,
                                          keep_prob=dropout_keep_prob)) as ssc:
-            pass
-            ##########################
-            # Put your code here.
-            ##########################
+            # 224*224*3
+            net=slim.conv2d(images, 2*growth, [7, 7], stride=2,
+                        padding='same', scope='Conv2d_0a_7x7')
+            # 112*112*2k
+            net=slim.max_pool2d(net, [3, 3], stride=2, padding='same',
+                                     scope='MaxPool_0b_3x3')
+            # 56*56*2k
+            end_points['input_layer'] = net
 
-    return logits, end_points
+            # dense block1
+            net=block(net, 6, growth, scope='block1')
+            # 56*56*(2k+6k)
+            end_points['dense_block1'] = net
+
+            # transition layer1
+            net=transit(net,compression_rate,scope='transit1')
+            # 28*28*((2k+6k)*compression_rate)
+            end_points['transition_layer1'] = net
+
+            # dense block2
+            net=block(net, 12, growth, scope='block2')
+            # 28*28*((2k+6k)*compression_rate+12k)
+            end_points['dense_block2'] = net
+
+            # transition layer2
+            net = transit(net, compression_rate, scope='transit2')
+            # 14*14*((2k+6k)*compression_rate+12k)*compression_rate
+            end_points['transition_layer2'] = net
+
+            # dense block3
+            net=block(net, 24, growth, scope='block3')
+            # 14*14*(~+24k)
+            end_points['dense_block3'] = net
+
+            # transition layer3
+            net = transit(net, compression_rate, scope='transit3')
+            # 7*7*(~+24k)*compression_rate
+            end_points['transition_layer3'] = net
+
+            # dense block4
+            net=block(net, 16, growth, scope='block4')
+            # 7*7*(~+16k)
+            end_points['dense_block4'] = net
+
+            # classification layer
+            # 7*7 global average pooling
+            net = slim.avg_pool2d(net, [7, 7], stride=1, padding='VALID')
+            net = slim.flatten(net)
+            net = slim.fully_connected(net, num_classes,
+                                              activation_fn=None,
+                                              scope='logits')
+            end_points['classify_layer'] = net
+
+    return net, end_points
 
 
 def bn_drp_scope(is_training=True, keep_prob=0.8):
@@ -79,7 +132,7 @@ def bn_drp_scope(is_training=True, keep_prob=0.8):
             return bsc
 
 
-def densenet_arg_scope(weight_decay=0.004):
+def densenet_arg_scope(weight_decay=0.004,activation_fn=tf.nn.relu):
     """Defines the default densenet argument scope.
 
     Args:
@@ -88,13 +141,15 @@ def densenet_arg_scope(weight_decay=0.004):
     Returns:
       An `arg_scope` to use for the inception v3 model.
     """
-    with slim.arg_scope(
+    with slim.arg_scope([slim.conv2d, slim.fully_connected],
+                        weights_regularizer=slim.l2_regularizer(weight_decay)):
+        with slim.arg_scope(
         [slim.conv2d],
         weights_initializer=tf.contrib.layers.variance_scaling_initializer(
             factor=2.0, mode='FAN_IN', uniform=False),
-        activation_fn=None, biases_initializer=None, padding='same',
+        activation_fn=activation_fn, biases_initializer=None, padding='same',
             stride=1) as sc:
-        return sc
+            return sc
 
 
 densenet.default_image_size = 224
