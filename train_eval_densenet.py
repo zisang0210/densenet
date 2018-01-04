@@ -31,7 +31,7 @@ def parse_args(check=True):
     return FLAGS, unparsed
 
 
-train_cmd = 'python ./train_image_classifier.py  --dataset_name={dataset_name} --dataset_dir={dataset_dir} --model_name={model_name} --checkpoint_exclude_scopes={checkpoint_exclude_scopes} --train_dir={train_dir} --learning_rate={learning_rate} --learning_rate_decay_type={learning_rate_decay_type} --num_epochs_per_decay={num_epochs_per_decay} --learning_rate_decay_factor={learning_rate_decay_factor} --weight_decay={weight_decay} --optimizer={optimizer} --batch_size={batch_size} --max_number_of_steps={max_number_of_steps} --clone_on_cpu={clone_on_cpu}'
+train_cmd = 'python ./train_image_classifier.py  --dataset_name={dataset_name} --dataset_dir={dataset_dir} --model_name={model_name} --train_dir={train_dir} --learning_rate={learning_rate} --learning_rate_decay_type={learning_rate_decay_type} --num_epochs_per_decay={num_epochs_per_decay} --learning_rate_decay_factor={learning_rate_decay_factor} --weight_decay={weight_decay} --optimizer={optimizer} --batch_size={batch_size} --max_number_of_steps={max_number_of_steps} --clone_on_cpu={clone_on_cpu}'
 eval_cmd = 'python ./eval_image_classifier.py --dataset_name={dataset_name} --dataset_dir={dataset_dir} --dataset_split_name={dataset_split_name} --model_name={model_name}   --checkpoint_path={checkpoint_path}  --eval_dir={eval_dir} --batch_size={batch_size}  --max_num_batches={max_num_batches}'
 
 if __name__ == '__main__':
