@@ -145,9 +145,7 @@ def densenet_arg_scope(weight_decay=0.004,activation_fn=tf.nn.relu):
                         weights_regularizer=slim.l2_regularizer(weight_decay)):
         with slim.arg_scope(
         [slim.conv2d],
-        weights_initializer=tf.contrib.layers.variance_scaling_initializer(
-            factor=2.0, mode='FAN_IN', uniform=False),
-        activation_fn=activation_fn, biases_initializer=None, padding='same',
+        activation_fn=activation_fn, padding='same',
             stride=1) as sc:
             return sc
 
