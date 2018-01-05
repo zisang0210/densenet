@@ -25,7 +25,7 @@ def parse_args(check=True):
     # eval
     parser.add_argument('--dataset_split_name', type=str, default='validation')
     parser.add_argument('--eval_dir', type=str, default='validation')
-    parser.add_argument('--max_num_batches', type=int, default=None)
+    parser.add_argument('--max_num_batches', type=str, default='validation')
 
     FLAGS, unparsed = parser.parse_known_args()
     return FLAGS, unparsed
