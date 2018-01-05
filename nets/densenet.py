@@ -141,13 +141,13 @@ def densenet_arg_scope(weight_decay=0.004,activation_fn=tf.nn.relu):
     Returns:
       An `arg_scope` to use for the inception v3 model.
     """
-    with slim.arg_scope([slim.conv2d, slim.fully_connected],
-                        weights_regularizer=slim.l2_regularizer(weight_decay)):
-        with slim.arg_scope(
-        [slim.conv2d],
-        activation_fn=activation_fn, padding='same',
+    with slim.arg_scope(
+            [slim.conv2d],
+            weights_initializer=tf.contrib.layers.variance_scaling_initializer(
+                factor=2.0, mode='FAN_IN', uniform=False),
+            activation_fn=None, biases_initializer=None, padding='same',
             stride=1) as sc:
-            return sc
+        return sc
 
 
 densenet.default_image_size = 224
